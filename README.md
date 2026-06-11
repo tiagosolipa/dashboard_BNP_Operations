@@ -6,7 +6,7 @@
 An action-oriented operational workstation for post-trade exception management. Built as a prototype during the BNP Paribas DRIVE Mentoring Programme.
 
 ## Overview
-Designed for operations teams who need to triage and resolve issues in real time. Unlike the Lifecycle Dashboard, this tool is built for intervention — surfacing SLA breaches, cut-off countdowns, and risk-scored alerts so operators can act before deadlines are missed.
+Designed for operations teams who need to triage and resolve issues in real time. Unlike the Lifecycle Dashboard, this tool is built for intervention, surfacing SLA breaches, cut-off countdowns, and risk-scored alerts so operators can act before deadlines are missed.
 
 ## Features
 - **8 Live KPI Cards** — Requiring action, near cut-off, overdue, manual queue, settlement pending, SLA breaches, awaiting confirmation, critical alerts
@@ -26,5 +26,5 @@ Designed for operations teams who need to triage and resolve issues in real time
 3. Open `index.html` in any web browser.
 
 ## Tech Stack
-- Java · Python · Cloudflare Workers
+- Java · Python · CSS
 - Built with AI-assisted development using Google Antigravity
