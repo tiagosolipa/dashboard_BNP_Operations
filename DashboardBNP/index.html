@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BNP Paribas Securities | Operations Monitoring Desk</title>
+  <meta name="description"
+    content="Real-time operations monitoring desk for BNP Paribas Securities — post-trade exception management, settlement monitoring, and workflow control." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="bnp-logo">
+        <div class="logo-mark">
+          <span class="logo-star">★</span>
+        </div>
+        <div class="logo-text">
+          <span class="logo-bnp">BNP PARIBAS</span>
+          <span class="logo-sub">Securities Services</span>
+        </div>
+      </div>
+      <div class="header-divider"></div>
+      <div class="dashboard-title-group">
+        <h1 class="dashboard-title">Operations Monitoring Desk</h1>
+        <span class="dashboard-subtitle">Post-Trade Exception Management · Settlement Monitoring</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        Live
+      </div>
+      <!-- Notification bell icon injected here by notifications.js -->
+      <div class="header-time" id="headerTime"></div>
+      <div class="header-user" id="headerUser" onclick="toggleUserSwitcher(event)">
+        <div class="user-avatar user-avatar-op" id="headerUserAvatar">OP</div>
+        <span id="headerUserName">Ops Manager</span>
+        <span class="user-caret">&#9660;</span>
+        <div class="user-switcher-dropdown" id="userSwitcherDropdown">
+          <div class="user-switcher-title">Switch Profile</div>
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label class="filter-label">Asset Type</label>
+      <div class="filter-chips" id="assetFilter">
+        <button class="chip active" data-value="all">All</button>
+        <button class="chip" data-value="Cash">Cash</button>
+        <button class="chip" data-value="FX">FX</button>
+        <button class="chip" data-value="Derivatives">Derivatives</button>
+        <button class="chip" data-value="Money Markets">Money Markets</button>
+        <button class="chip" data-value="Securities">Securities</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Client</label>
+      <select class="filter-select" id="clientFilter">
+        <option value="all">All Clients</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Cut-Off Window</label>
+      <div class="filter-chips" id="cutoffFilter">
+        <button class="chip active" data-value="all">All</button>
+        <button class="chip chip-warn" data-value="overdue">Overdue</button>
+        <button class="chip chip-alert" data-value="critical">Critical (&lt;2h)</button>
+        <button class="chip" data-value="today">Today</button>
+        <button class="chip" data-value="24h">Next 24h</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Cut-Off Time Interval</label>
+      <div class="cutoff-time-dropdown" id="cutoffTimeDropdown">
+        <button class="cutoff-time-trigger" id="cutoffTimeTrigger" aria-haspopup="listbox" aria-expanded="false">
+          <span id="cutoffTimeLabel">All Day</span>
+          <span class="cutoff-time-arrow">&#9660;</span>
+        </button>
+        <div class="cutoff-time-panel" id="cutoffTimePanel" role="listbox">
+          <button class="cutoff-time-option active" data-start="-1" data-end="-1" role="option" aria-selected="true">All Day</button>
+          <button class="cutoff-time-option" data-start="0" data-end="5" role="option" aria-selected="false">00:00 – 05:00</button>
+          <button class="cutoff-time-option" data-start="5" data-end="10" role="option" aria-selected="false">05:00 – 10:00</button>
+          <button class="cutoff-time-option" data-start="10" data-end="14" role="option" aria-selected="false">10:00 – 14:00</button>
+          <button class="cutoff-time-option" data-start="14" data-end="18" role="option" aria-selected="false">14:00 – 18:00</button>
+          <button class="cutoff-time-option" data-start="18" data-end="24" role="option" aria-selected="false">18:00 – 24:00</button>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Workflow Stage</label>
+      <select class="filter-select" id="stageFilter">
+        <option value="all">All Stages</option>
+        <option value="Capture">Capture</option>
+        <option value="Confirmation">Confirmation</option>
+        <option value="Settlement">Settlement</option>
+        <option value="Reconciliation">Reconciliation</option>
+        <option value="Completed">Completed</option>
+      </select>
+    </div>
+    <button class="btn-reset" id="resetFilters">↺ Reset</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- OPERATIONAL KPI CARDS — 2 rows × 4 -->
+    <div class="kpi-row ops-kpi-row">
+      <div class="kpi-card ops-kpi" id="kpi-reqaction">
+        <div class="kpi-icon icon-red">⚡</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Requiring Action</span>
+          <span class="kpi-value" id="kpi-reqaction-val">—</span>
+          <span class="kpi-delta negative">Overdue, critical or manual</span>
+        </div>
+      </div>
+      <div class="kpi-card ops-kpi" id="kpi-nearcutoff">
+        <div class="kpi-icon icon-orange">⏰</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Near Cut-Off</span>
+          <span class="kpi-value" id="kpi-nearcutoff-val">—</span>
+          <span class="kpi-delta negative">&lt;30 min to deadline</span>
+        </div>
+      </div>
+      <div class="kpi-card ops-kpi" id="kpi-overdue">
+        <div class="kpi-icon icon-red-solid">⛔</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Overdue</span>
+          <span class="kpi-value" id="kpi-overdue-val">—</span>
+          <span class="kpi-delta negative">Past SLA deadline</span>
+        </div>
+      </div>
+      <div class="kpi-card ops-kpi" id="kpi-manual">
+        <div class="kpi-icon icon-purple">✋</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Manual Queue</span>
+          <span class="kpi-value" id="kpi-manual-val">—</span>
+          <span class="kpi-delta negative">Awaiting intervention</span>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-row ops-kpi-row">
+      <div class="kpi-card ops-kpi" id="kpi-settlement">
+        <div class="kpi-icon icon-amber">⬡</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Settlement Pending</span>
+          <span class="kpi-value" id="kpi-settlement-val">—</span>
+          <span class="kpi-delta neutral">In settlement stage</span>
+        </div>
+      </div>
+      <div class="kpi-card ops-kpi" id="kpi-sla">
+        <div class="kpi-icon icon-red">🚨</div>
+        <div class="kpi-body">
+          <span class="kpi-label">SLA Breaches</span>
+          <span class="kpi-value" id="kpi-sla-val">—</span>
+          <span class="kpi-delta negative">Past deadline</span>
+        </div>
+      </div>
+      <div class="kpi-card ops-kpi" id="kpi-confirmation">
+        <div class="kpi-icon icon-blue">📋</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Awaiting Confirmation</span>
+          <span class="kpi-value" id="kpi-confirmation-val">—</span>
+          <span class="kpi-delta neutral">Confirmation stage</span>
+        </div>
+      </div>
+      <div class="kpi-card ops-kpi" id="kpi-critical">
+        <div class="kpi-icon icon-orange">⚠</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Critical Alerts</span>
+          <span class="kpi-value" id="kpi-critical-val">—</span>
+          <span class="kpi-delta negative">&lt;2h to cut-off</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- STAGE ERRORS PANEL -->
+    <div class="stage-errors-panel" id="stageErrorsPanel"></div>
+
+    <!-- RISK & ALERT MONITOR — PRIMARY WORKSPACE -->
+    <div class="alerts-section ops-primary-section">
+      <div class="alerts-header">
+        <h2 class="section-title">⚠ Risk &amp; Alert Monitor</h2>
+        <span class="alert-count" id="alert-count-badge">—</span>
+        <span class="ops-section-hint">Click any row for details · Action buttons resolve exceptions</span>
+      </div>
+      <div class="risk-score-filter-bar" id="riskScoreFilterBar">
+        <span class="rs-filter-label">Risk Score:</span>
+        <button class="rs-chip rs-chip-all active" data-min="0" data-max="100">All</button>
+        <button class="rs-chip" data-min="0" data-max="30">0–30 <span class="rs-chip-tag rs-low">Low</span></button>
+        <button class="rs-chip" data-min="31" data-max="50">31–50 <span class="rs-chip-tag rs-med">Med</span></button>
+        <button class="rs-chip" data-min="51" data-max="70">51–70 <span class="rs-chip-tag rs-high">High</span></button>
+        <button class="rs-chip rs-chip-danger" data-min="71" data-max="85">71–85 <span class="rs-chip-tag rs-vhigh">V.High</span></button>
+        <button class="rs-chip rs-chip-critical" data-min="86" data-max="100">86–100 <span class="rs-chip-tag rs-crit">Critical</span></button>
+      </div>
+      <div class="alerts-strip" id="alertsStrip"></div>
+    </div>
+
+    <!-- TRANSACTION REGISTER — SECONDARY TABLE -->
+    <div class="table-card">
+      <div class="table-header-row">
+        <div>
+          <h2 class="chart-title">Transaction Register</h2>
+          <span class="chart-subtitle">Full transaction list · Click any row to view workflow timeline</span>
+        </div>
+        <div class="table-controls">
+          <input type="text" class="search-input" id="tableSearch" placeholder="🔍  Search ID, client, asset..." />
+          <span class="row-count" id="rowCount">— rows</span>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table" id="txTable">
+          <thead>
+            <tr>
+              <th>Tx ID</th>
+              <th>Asset Type</th>
+              <th>Client</th>
+              <th>Client ID</th>
+              <th>Current Stage</th>
+              <th>Time in Stage</th>
+              <th>Cut-Off</th>
+              <th>Status</th>
+              <th>Manual</th>
+              <th>STP</th>
+            </tr>
+          </thead>
+          <tbody id="txTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination-row">
+        <button class="btn-page" id="prevPage">← Prev</button>
+        <span class="page-info" id="pageInfo">Page 1</span>
+        <button class="btn-page" id="nextPage">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSACTION DETAIL MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="modalTitle">Transaction Detail</h2>
+          <span class="modal-sub" id="modalSub"></span>
+        </div>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-meta modal-meta-3row" id="modalMeta"></div>
+      <div class="modal-section-title">Workflow Timeline</div>
+      <div class="timeline-container" id="timelineContainer"></div>
+      <!-- Action buttons in modal -->
+      <div class="modal-actions" id="modalActions"></div>
+      <!-- Audit Trail / Activity History -->
+      <div class="modal-section-title-audit" id="auditTrailTitle">
+        <span class="audit-icon">📋</span> Activity History
+      </div>
+      <div class="audit-trail-list" id="auditTrailContainer"></div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="dashboard.js"></script>
+  <script src="notifications.js"></script>
+</body>
+
+</html>
