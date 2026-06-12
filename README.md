@@ -49,5 +49,5 @@ Detailed feature documentation is available in the [`docs/`](docs/) folder:
 
 ## Tech Stack
 
-- JavaScript · CSS · HTML
+- JavaScript · Python · CSS · HTML
 - Built with AI-assisted development using Google Antigravity
